@@ -1,0 +1,32 @@
+services:
+  postgres:
+    build:
+      context: ./backend
+      dockerfile: db/Dockerfile
+    environment:
+      # Bootstrap superuser -- used only during container init (to create
+      # app_migrator/app_runtime and run migrations). The application
+      # itself never connects as this user.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:-postgres_dev_pw}
+      POSTGRES_DB: carrier_recs
+      # Consumed by backend/db/roles.sql via bootstrap.sh.
+      APP_MIGRATOR_PASSWORD: ${APP_MIGRATOR_PASSWORD:-migrator_dev_pw}
+      APP_RUNTIME_PASSWORD: ${APP_RUNTIME_PASSWORD:-runtime_dev_pw}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Data only -- init scripts are baked into the image (see
+      # db/Dockerfile), not bind-mounted, so there's nothing else to
+      # mount here. Named volume so data survives `docker-compose down`
+      # (but not `down -v`) -- and so init scripts only run once, on
+      # first boot of an empty volume.
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d carrier_recs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
