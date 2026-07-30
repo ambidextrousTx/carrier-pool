@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "psycopg[binary]>=3.3",
+    "pydantic>=2.9",
 ]
 
 [project.optional-dependencies]
@@ -11,5 +12,13 @@ dev = [
     "pytest>=9.1",
 ]
 
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
