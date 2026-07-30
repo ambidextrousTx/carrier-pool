@@ -14,10 +14,10 @@ TODO: to be filled in
 
 * For running unit tests
 > [!NOTE]
+This needs Python 3.11 or greater and covers all tests that do not need the Docker containers to be up
 
 ```bash
-# TODO: Make this exact
-$ python -m pytest tests/ -v
+$ python -m pytest tests/backend -v
 
 ```
 
@@ -27,8 +27,7 @@ $ python -m pytest tests/ -v
 Must have the containers up and running because the tests hit the Postgres container
 
 ```bash
-# TODO: Make this exact
-python -m pytest tests/rls_* -v
+$ python -m pytest tests/db -v
 
 
 ```
