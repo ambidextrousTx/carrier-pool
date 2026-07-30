@@ -1,3 +1,41 @@
+# Ravi Sinha's Submission
+
+## Development Environment
+* MacOS Tahoe 26, Python 3.11 (through Anaconda), Docker Desktop (v4.14.1, Engine 20.10.21, compose v2.12.2)
+* To bring up the working system do
+
+```bash
+$ docker compose up --build -d
+
+```
+
+Then, hit the following URL on your host:
+TODO: to be filled in
+
+* For running unit tests
+> [!NOTE]
+
+```bash
+# TODO: Make this exact
+$ python -m pytest tests/ -v
+
+```
+
+
+* For running Postgres-specific unit tests
+> [!Warning]
+Must have the containers up and running because the tests hit the Postgres container
+
+```bash
+# TODO: Make this exact
+python -m pytest tests/rls_* -v
+
+
+```
+
+
+---
+
 # Take-Home: Carrier Recommendation for Freight Brokers
 
 - You may use AI coding tools (Claude Code, Codex, Cursor, etc) are strongly encouraged.
