@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-from carrier_recs.canonical.enums import EquipmentType, LoadStatus, RateSide, SourceSystem
+from canonical.enums import EquipmentType, LoadStatus, RateSide, SourceSystem
 
 
 class Stop(BaseModel):
