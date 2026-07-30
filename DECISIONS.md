@@ -1,7 +1,9 @@
 # Decisions made during development
 
 ## Development
-* Model used: Claude Sonnet 5 with High Effort (free)
+* Models used: 
+  * Backend, Database: Claude Sonnet 5 with High Effort (free)
+  * Frontend: Gemini 3.6 Flash
 * Style used: conversational in the free web console. The model was instructed to work with me as a co-worker, brainstorm-er, rubber duck, buddy, guide, and mentor. It was asked to really nail down the details and build the system brick by brick, adding unit tests as we go to keep the system robust
 
 ## Architectural Decisions
