@@ -14,7 +14,7 @@ TODO: to be filled in
 
 * For running unit tests
 > [!NOTE]
-This needs Python 3.11 or greater and covers all tests that do not need the Docker containers to be up
+This needs Python 3.11 or greater and covers all tests that do not need the Docker containers to be up. For local testing on the host, packages like `pytest`, `pydantic`, and `psycopg` will need to be installed.
 
 ```bash
 $ python -m pytest tests/backend -v
@@ -24,10 +24,10 @@ $ python -m pytest tests/backend -v
 
 * For running Postgres-specific unit tests
 > [!Warning]
-Must have the containers up and running because the tests hit the Postgres container
+Must have the containers up and running because the tests hit the Postgres container for testing migrations
 
 ```bash
-$ python -m pytest tests/db -v
+$ python -m pytest tests/persistence -v
 
 
 ```
