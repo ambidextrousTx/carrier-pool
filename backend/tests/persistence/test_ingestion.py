@@ -213,6 +213,41 @@ class TestCarrierResolution:
         assert _count(admin_conn, "customers", broker_id=broker_a) == 0
 
 
+class TestStopGeoEnrichment:
+    def test_stops_get_market_area_and_coordinates(self, bare_runtime_conn, two_brokers, admin_conn):
+        broker_a, _ = two_brokers
+        ingest_sync(bare_runtime_conn, broker_a, parse_freightflow_sync(FREIGHTFLOW_SYNC_UNBOOKED))
+
+        load = _fetch_load(admin_conn, broker_a, "FREIGHTFLOW", "127472397")
+        with admin_conn.cursor() as cur:
+            cur.execute(
+                "SELECT city, market_area, latitude, longitude FROM stops WHERE load_id = %s ORDER BY sequence",
+                (load["id"],),
+            )
+            rows = cur.fetchall()
+
+        pickup_city, pickup_market, pickup_lat, pickup_lon = rows[0]
+        assert pickup_city == "GRAND PRAIRIE"
+        assert pickup_market == "Dallas-Fort Worth Metro"
+        assert pickup_lat is not None and pickup_lon is not None
+
+        dropoff_city, dropoff_market, _, _ = rows[1]
+        assert dropoff_city == "KATY"
+        assert dropoff_market == "Houston Metro"
+
+    def test_unresolvable_zip_raises_and_rolls_back_whole_sync(
+        self, bare_runtime_conn, two_brokers, admin_conn
+    ):
+        broker_a, _ = two_brokers
+        raw = copy.deepcopy(FREIGHTFLOW_SYNC_UNBOOKED)
+        raw["loads"][0]["stops"][0]["zipCode"] = "00000"  # not in our reference data
+
+        with pytest.raises(ValueError, match="unresolvable zip code"):
+            ingest_sync(bare_runtime_conn, broker_a, parse_freightflow_sync(raw))
+
+        assert _fetch_load(admin_conn, broker_a, "FREIGHTFLOW", "127472397") is None
+
+
 class TestBrokerOSIngestion:
     def test_full_pipeline_happy_path(self, bare_runtime_conn, two_brokers, admin_conn):
         broker_a, _ = two_brokers

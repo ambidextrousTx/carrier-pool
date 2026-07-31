@@ -26,6 +26,7 @@ $ uv sync
 Next, run the backend tests
 ```bash
 $ uv run pytest tests/backend -v
+$ uv run pytest tests/geo -v
 
 ```
 
@@ -36,8 +37,12 @@ Must have the containers up and running because the tests hit the Postgres conta
 
 ```bash
 $ uv run pytest tests/persistence -v
+```
 
 
+* For running the entire test suite (with docker compose up and running)
+```bash
+$ uv run pytest tests/ -v
 ```
 
 

@@ -1,5 +1,6 @@
 from canonical.enums import SourceSystem
 from canonical.models import AdapterResult, Carrier, Customer, Load, RateLineItem, Stop
+from geo.lookup import resolve_zip
 from persistence.db import set_tenant_context
 
 
@@ -149,23 +150,43 @@ def _upsert_load(cur, broker_id: str, load: Load, customer_id: str, carrier_id: 
     return cur.fetchone()[0]
 
 
+def _resolve_stop_geo(stop: Stop) -> tuple[str | None, float | None, float | None]:
+    """Returns (market_area, latitude, longitude) for a stop's zip code.
+    A missing zip_code is a known, legitimate state (some sources allow
+    it) and resolves to (None, None, None). A PRESENT zip that doesn't
+    match anything in our reference data is a data integrity problem --
+    we control the entire zip universe this system deals with (real
+    fixtures plus our own synthetic generator), so an unresolvable zip
+    means something has drifted out of sync and should fail loudly
+    rather than silently ingest a geo-less stop."""
+    if stop.zip_code is None:
+        return None, None, None
+    geo = resolve_zip(stop.zip_code)
+    if geo is None:
+        raise ValueError(f"unresolvable zip code {stop.zip_code!r} for stop in {stop.city}, {stop.state}")
+    return geo.market_area, geo.latitude, geo.longitude
+
+
 def _replace_stops(cur, broker_id: str, load_id: str, stops: list[Stop]) -> None:
     # No source gives a stable per-stop identifier, so stops are always
     # wholesale-replaced rather than upserted individually.
     cur.execute("DELETE FROM stops WHERE load_id = %s", (load_id,))
     for stop in stops:
+        market_area, latitude, longitude = _resolve_stop_geo(stop)
         cur.execute(
             """
             INSERT INTO stops (
                 broker_id, load_id, sequence, is_pickup, is_dropoff,
                 city, state, zip_code,
                 scheduled_date, scheduled_window_start, scheduled_window_end,
-                actual_arrival_at, actual_departure_at
+                actual_arrival_at, actual_departure_at,
+                market_area, latitude, longitude
             ) VALUES (
                 %(broker_id)s, %(load_id)s, %(sequence)s, %(is_pickup)s, %(is_dropoff)s,
                 %(city)s, %(state)s, %(zip_code)s,
                 %(scheduled_date)s, %(scheduled_window_start)s, %(scheduled_window_end)s,
-                %(actual_arrival_at)s, %(actual_departure_at)s
+                %(actual_arrival_at)s, %(actual_departure_at)s,
+                %(market_area)s, %(latitude)s, %(longitude)s
             )
             """,
             {
@@ -182,6 +203,9 @@ def _replace_stops(cur, broker_id: str, load_id: str, stops: list[Stop]) -> None
                 "scheduled_window_end": stop.scheduled_window_end,
                 "actual_arrival_at": stop.actual_arrival_at,
                 "actual_departure_at": stop.actual_departure_at,
+                "market_area": market_area,
+                "latitude": latitude,
+                "longitude": longitude,
             },
         )
 
