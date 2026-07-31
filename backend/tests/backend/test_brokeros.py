@@ -6,7 +6,7 @@ import pytest
 
 from adapters.brokeros import parse_brokeros_sync
 from canonical.enums import EquipmentType, LoadStatus, SourceSystem
-from tms_fixtures import BROKEROS_SYNC
+from tests.tms_fixtures import BROKEROS_SYNC
 
 
 class TestCoreFields:
