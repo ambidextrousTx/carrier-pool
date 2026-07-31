@@ -5,12 +5,12 @@ import pytest
 def _seed_one_carrier_per_broker(admin_conn, broker_a, broker_b):
     with admin_conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO carriers (broker_id, name) VALUES (%s, %s)",
-            (broker_a, "A Trucking"),
+            "INSERT INTO carriers (broker_id, source_system, source_native_id, name) VALUES (%s, %s, %s, %s)",
+            (broker_a, "FREIGHTFLOW", "1001", "A Trucking"),
         )
         cur.execute(
-            "INSERT INTO carriers (broker_id, name) VALUES (%s, %s)",
-            (broker_b, "B Trucking"),
+            "INSERT INTO carriers (broker_id, source_system, source_native_id, name) VALUES (%s, %s, %s, %s)",
+            (broker_b, "FREIGHTFLOW", "1002", "B Trucking"),
         )
 
 
@@ -75,8 +75,8 @@ def test_cannot_write_a_row_into_another_tenant(admin_conn, two_brokers, runtime
     with pytest.raises(psycopg.errors.InsufficientPrivilege):
         with conn_a.cursor() as cur:
             cur.execute(
-                "INSERT INTO carriers (broker_id, name) VALUES (%s, %s)",
-                (broker_b, "Sneaky Trucking"),
+                "INSERT INTO carriers (broker_id, source_system, source_native_id, name) VALUES (%s, %s, %s, %s)",
+                (broker_b, "FREIGHTFLOW", "9999", "Sneaky Trucking"),
             )
 
 

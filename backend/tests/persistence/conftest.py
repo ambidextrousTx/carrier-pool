@@ -1,7 +1,8 @@
-import os
-
 import psycopg
 import pytest
+
+import os
+
 
 DB_HOST = os.environ.get("TEST_DB_HOST", "localhost")
 DB_NAME = os.environ.get("TEST_DB_NAME", "carrier_recs")
@@ -23,6 +24,17 @@ def admin_conn():
 
 
 @pytest.fixture
+def bare_runtime_conn():
+    """A plain app_runtime connection with NO tenant context pre-set --
+    unlike the top-level `runtime_conn` fixture. Ingestion code is
+    responsible for setting its own context; this fixture makes sure our
+    tests actually prove that, rather than piggybacking on scaffolding."""
+    conn = psycopg.connect(RUNTIME_DSN, autocommit=True)
+    yield conn
+    conn.close()
+
+
+@pytest.fixture
 def two_brokers(admin_conn):
     """Creates two tenant brokers for a test and cleans up after."""
     with admin_conn.cursor() as cur:
@@ -33,6 +45,12 @@ def two_brokers(admin_conn):
         ids = [row[0] for row in cur.fetchall()]
     yield ids
     with admin_conn.cursor() as cur:
+        # stops and rate_line_items cascade automatically via ON DELETE
+        # CASCADE from loads. loads references customers and carriers, so
+        # it must go first; customers/carriers reference brokers, so they
+        # go before brokers.
+        cur.execute("DELETE FROM loads WHERE broker_id = ANY(%s)", (ids,))
+        cur.execute("DELETE FROM customers WHERE broker_id = ANY(%s)", (ids,))
         cur.execute("DELETE FROM carriers WHERE broker_id = ANY(%s)", (ids,))
         cur.execute("DELETE FROM brokers WHERE id = ANY(%s)", (ids,))
 
