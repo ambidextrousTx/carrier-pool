@@ -88,6 +88,7 @@ def _parse_carrier(raw: dict) -> Carrier:
 
 def _parse_rate_line_item(raw: dict) -> RateLineItem:
     return RateLineItem(
+        source_native_id=str(raw["rate_id"]),
         side=_map_rate_side(raw["side"]),
         code=raw["code"],
         amount_usd=to_decimal(raw["amount_usd"]),

@@ -120,6 +120,7 @@ class TestRateLineItems:
 
         pay_item = next(i for i in items if i.side == RateSide.PAY)
         bill_item = next(i for i in items if i.side == RateSide.BILL)
+        assert pay_item.source_native_id == "910233"
         assert pay_item.code == "LINEHAUL"
         assert pay_item.amount_usd == Decimal("1035.00")
         assert bill_item.amount_usd == Decimal("1310.00")

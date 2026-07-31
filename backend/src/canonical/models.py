@@ -33,6 +33,7 @@ class Stop(BaseModel):
 
 
 class RateLineItem(BaseModel):
+    source_native_id: str  # stable ID from the source; makes append-only ingestion idempotent
     side: RateSide
     code: str
     amount_usd: Decimal  # can be negative (correction/credit)
