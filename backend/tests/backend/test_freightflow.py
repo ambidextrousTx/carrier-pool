@@ -6,7 +6,7 @@ import pytest
 
 from adapters.freightflow import parse_freightflow_sync
 from canonical.enums import EquipmentType, LoadStatus, SourceSystem
-from tests.tms_fixtures import FREIGHTFLOW_SYNC_BOOKED, FREIGHTFLOW_SYNC_UNBOOKED
+from tms_fixtures import FREIGHTFLOW_SYNC_BOOKED, FREIGHTFLOW_SYNC_UNBOOKED
 
 
 class TestUnbookedLoad:

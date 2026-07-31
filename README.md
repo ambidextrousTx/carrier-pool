@@ -14,10 +14,18 @@ TODO: to be filled in
 
 * For running unit tests
 > [!NOTE]
-This needs Python 3.11 or greater and covers all tests that do not need the Docker containers to be up. For local testing on the host, packages like `pytest`, `pydantic`, and `psycopg` will need to be installed.
+This project uses `uv` as the dependency manager. Make sure you have `uv` installed on your host
 
+First, prepare the backend for testing
 ```bash
-$ python -m pytest tests/backend -v
+$ cd backend
+$ uv sync
+
+```
+
+Next, run the backend tests
+```bash
+$ uv run pytest tests/backend -v
 
 ```
 
@@ -27,7 +35,7 @@ $ python -m pytest tests/backend -v
 Must have the containers up and running because the tests hit the Postgres container for testing migrations
 
 ```bash
-$ python -m pytest tests/persistence -v
+$ uv run pytest tests/persistence -v
 
 
 ```

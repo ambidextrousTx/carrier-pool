@@ -7,7 +7,7 @@ from adapters.brokeros import parse_brokeros_sync
 from adapters.freightflow import parse_freightflow_sync
 from adapters.hauldesk import parse_hauldesk_sync
 from persistence.ingestion import ingest_sync
-from tests.tms_fixtures import (
+from tms_fixtures import (
     BROKEROS_SYNC,
     FREIGHTFLOW_SYNC_BOOKED,
     FREIGHTFLOW_SYNC_UNBOOKED,

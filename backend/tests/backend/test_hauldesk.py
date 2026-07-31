@@ -6,7 +6,7 @@ import pytest
 
 from adapters.hauldesk import parse_hauldesk_sync
 from canonical.enums import EquipmentType, LoadStatus, RateSide, SourceSystem
-from tests.tms_fixtures import HAULDESK_SYNC
+from tms_fixtures import HAULDESK_SYNC
 
 
 class TestCoreFields:
