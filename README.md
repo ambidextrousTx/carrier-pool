@@ -27,6 +27,7 @@ Next, run the backend tests
 ```bash
 $ uv run pytest tests/backend -v
 $ uv run pytest tests/geo -v
+$ uv run pytest tests/synthetic -v
 
 ```
 
