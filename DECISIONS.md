@@ -21,6 +21,10 @@
 * Freightflow's `stops`, HaulDesk's `pu_city` and `del_city` etc., and BrokerOS's `stops` with `reference records` are used to derive the stops as cleanly as possible
 * Timestamps are normalized to UTC-aware datetimes
 
+### Synthetic Data
+* Data is generated with the following rules: (i) one broker per TMS, (ii) 90 days of history, (iii) 300 loads per broker (3/4 a day), (iv) 5-8 days of 'ACTIVE' status data, (v) 8-12 random 'primary' lanes per broker, (vi) one lane per broker kept sparse, (vii) 25-35 carriers per broker (regular and occasional)
+* There is a TMS-agnostic 'world model' with loads on a day-by-day basis
+
 ### Recommendation Engine (Intelligence)
 * Instead of relying on a black-box machine learning model, it was decided to weight-rank factors which enables explaining why a carrier or a rate is being recommended
 
