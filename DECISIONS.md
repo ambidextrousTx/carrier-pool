@@ -33,5 +33,7 @@
 ### Authentication
 * For this demo, I'm using React Contexts that simulate authenticated sessions instead of messing with a real authn/authz mechanism
 
-## Scope Cuts
+## Scope Cuts (to be addressed if more time is available)
+* The recommendation engine (carrier ranking and rate prediction) is direct SQL + some Python. It should be abstracted out as a separate service
+* Broker selection is a simple parameter - it should be a full blown real login/auth system
 
