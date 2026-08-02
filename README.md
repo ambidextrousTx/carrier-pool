@@ -51,7 +51,7 @@ $ uv run pytest tests/ -v
 
 ```
 
-Now load the demo data
+Now load the demo data (from the backend/ folder)
 ```bash
 $ uv run python -m scripts.seed_data
 ```

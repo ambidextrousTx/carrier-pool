@@ -17,7 +17,7 @@ import psycopg
 from adapters.brokeros import parse_brokeros_sync
 from adapters.freightflow import parse_freightflow_sync
 from adapters.hauldesk import parse_hauldesk_sync
-from persistence.ingest import ingest_sync
+from persistence.ingestion import ingest_sync
 from scripts.shared import BROKERS, DATA_DIR
 
 _PARSERS = {
