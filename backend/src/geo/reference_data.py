@@ -23,25 +23,57 @@ class GeoZip:
 _RAW_ZIPS: list[tuple[str, str, str, float, float, str]] = [
     # zip, city, state, lat, lon, market_area
     # --- Dallas-Fort Worth Metro ---
+    # Texas Triangle metro -- deliberately dense (10 zips) with real
+    # suburbs alongside the two city centers, not just Dallas+Fort Worth
+    # themselves. See TEXAS_TRIANGLE_MARKET_AREAS below.
     ("75201", "Dallas", "TX", 32.78, -96.80, "Dallas-Fort Worth Metro"),
     ("76102", "Fort Worth", "TX", 32.75, -97.33, "Dallas-Fort Worth Metro"),
     ("75050", "Grand Prairie", "TX", 32.75, -97.02, "Dallas-Fort Worth Metro"),
     ("76010", "Arlington", "TX", 32.74, -97.11, "Dallas-Fort Worth Metro"),
     ("75061", "Irving", "TX", 32.81, -96.95, "Dallas-Fort Worth Metro"),
+    ("75023", "Plano", "TX", 33.02, -96.70, "Dallas-Fort Worth Metro"),
+    ("75034", "Frisco", "TX", 33.15, -96.82, "Dallas-Fort Worth Metro"),
+    ("75069", "McKinney", "TX", 33.20, -96.66, "Dallas-Fort Worth Metro"),
+    ("75040", "Garland", "TX", 32.91, -96.64, "Dallas-Fort Worth Metro"),
+    ("75006", "Carrollton", "TX", 32.95, -96.89, "Dallas-Fort Worth Metro"),
     # --- Houston Metro ---
+    # Texas Triangle metro -- 10 zips, city core plus suburbs ringing it
+    # in most directions (west/Katy, south/Pearland, north/Spring-Conroe
+    # corridor, southeast/Baytown).
     ("77002", "Houston", "TX", 29.76, -95.37, "Houston Metro"),
     ("77449", "Katy", "TX", 29.79, -95.82, "Houston Metro"),
     ("77502", "Pasadena", "TX", 29.69, -95.21, "Houston Metro"),
     ("77478", "Sugar Land", "TX", 29.62, -95.63, "Houston Metro"),
     ("77520", "Baytown", "TX", 29.73, -94.98, "Houston Metro"),
+    ("77380", "The Woodlands", "TX", 30.16, -95.46, "Houston Metro"),
+    ("77584", "Pearland", "TX", 29.56, -95.29, "Houston Metro"),
+    ("77301", "Conroe", "TX", 30.31, -95.46, "Houston Metro"),
+    ("77433", "Cypress", "TX", 29.97, -95.69, "Houston Metro"),
+    ("77573", "League City", "TX", 29.51, -95.09, "Houston Metro"),
     # --- San Antonio Metro ---
+    # Texas Triangle metro -- 8 zips. Smaller metro in real life too, so
+    # deliberately left a bit thinner than DFW/Houston rather than
+    # padding it out artificially.
     ("78205", "San Antonio", "TX", 29.42, -98.49, "San Antonio Metro"),
     ("78130", "New Braunfels", "TX", 29.70, -98.12, "San Antonio Metro"),
     ("78154", "Schertz", "TX", 29.55, -98.27, "San Antonio Metro"),
+    ("78006", "Boerne", "TX", 29.79, -98.73, "San Antonio Metro"),
+    ("78108", "Cibolo", "TX", 29.54, -98.23, "San Antonio Metro"),
+    ("78148", "Universal City", "TX", 29.55, -98.29, "San Antonio Metro"),
+    ("78109", "Converse", "TX", 29.52, -98.31, "San Antonio Metro"),
+    ("78233", "Live Oak", "TX", 29.56, -98.34, "San Antonio Metro"),
     # --- Austin Metro ---
+    # Texas Triangle metro -- 7 zips. Geographically the 4th vertex of
+    # the "triangle" (it's really a quadrilateral); kept in since it was
+    # already present and the brief said covering more than the strict
+    # 3 named metros is fine.
     ("78701", "Austin", "TX", 30.27, -97.74, "Austin Metro"),
     ("78664", "Round Rock", "TX", 30.51, -97.68, "Austin Metro"),
     ("78626", "Georgetown", "TX", 30.63, -97.68, "Austin Metro"),
+    ("78613", "Cedar Park", "TX", 30.51, -97.82, "Austin Metro"),
+    ("78660", "Pflugerville", "TX", 30.44, -97.62, "Austin Metro"),
+    ("78641", "Leander", "TX", 30.58, -97.85, "Austin Metro"),
+    ("78640", "Kyle", "TX", 29.99, -97.88, "Austin Metro"),
     # --- Memphis Metro ---
     ("38103", "Memphis", "TN", 35.15, -90.05, "Memphis Metro"),
     ("38671", "Southaven", "MS", 34.99, -90.03, "Memphis Metro"),
@@ -94,3 +126,12 @@ _RAW_ZIPS: list[tuple[str, str, str, float, float, str]] = [
 ]
 
 GEO_ZIPS: list[GeoZip] = [GeoZip(*row) for row in _RAW_ZIPS]
+
+# The core theater of operations for the synthetic brokers: loads should
+# predominantly move within this set (see synth/world.py's primary-lane
+# selection). Everything else in GEO_ZIPS remains available for tail/
+# one-off lanes, which is deliberate -- real brokers occasionally book
+# something outside their usual footprint.
+TEXAS_TRIANGLE_MARKET_AREAS: frozenset[str] = frozenset(
+    {"Dallas-Fort Worth Metro", "Houston Metro", "San Antonio Metro", "Austin Metro"}
+)
