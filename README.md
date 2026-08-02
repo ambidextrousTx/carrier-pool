@@ -2,28 +2,33 @@
 
 ## Development Environment
 * MacOS Tahoe 26, Python 3.11 (through Anaconda), Docker Desktop (v4.14.1, Engine 20.10.21, compose v2.12.2)
-* To bring up the working system do
 
-```bash
-$ docker compose up --build -d
 
-```
-
-Then, hit the following URL on your host:
-TODO: to be filled in
-
-* For running unit tests
+* Setup
 > [!NOTE]
 This project uses `uv` as the dependency manager. Make sure you have `uv` installed on your host
 
-First, prepare the backend for testing
+Start everything:
+```bash
+$ docker compose up --build -d
+```
+
+
+This builds a custom Postgres image with migrations baked in. If you ever need a clean slate:
+```bash
+$ docker compose down -v # wipes the volume
+$ docker compose up -d
+
+```
+
+Prepare the backend:
 ```bash
 $ cd backend
 $ uv sync
 
 ```
 
-Next, run the backend tests
+Next, run the backend tests:
 ```bash
 $ uv run pytest tests/backend -v
 $ uv run pytest tests/geo -v
@@ -31,8 +36,7 @@ $ uv run pytest tests/synthetic -v
 
 ```
 
-
-* For running Postgres-specific unit tests
+Next, run the Postgres-specific unit tests
 > [!Warning]
 Must have the containers up and running because the tests hit the Postgres container for testing migrations
 
@@ -41,10 +45,18 @@ $ uv run pytest tests/persistence -v
 ```
 
 
-* For running the entire test suite (with docker compose up and running)
+For running the entire test suite (with docker compose up and running)
 ```bash
 $ uv run pytest tests/ -v
+
 ```
+
+Now load the demo data
+```bash
+$ uv run python -m scripts.seed_data
+```
+
+This reads the synthetic data already committed under data/*/current.json and ingests it into Postgres via the real adapters -- exactly as if it had arrived from each broker's actual TMS. Idempotent, safe to re-run. Note that you do not need to run `generate.py` - that is what produced the committed data/ files.
 
 
 ---

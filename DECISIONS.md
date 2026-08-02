@@ -22,8 +22,9 @@
 * Timestamps are normalized to UTC-aware datetimes
 
 ### Synthetic Data
-* Data is generated with the following rules: (i) one broker per TMS, (ii) 90 days of history, (iii) 300 loads per broker (3/4 a day), (iv) 5-8 days of 'ACTIVE' status data, (v) 8-12 random 'primary' lanes per broker, (vi) one lane per broker kept sparse, (vii) 25-35 carriers per broker (regular and occasional)
-* There is a TMS-agnostic 'world model' with loads on a day-by-day basis
+* Data is generated with the following rules: (i) one broker per TMS, (ii) 90 days of history, (iii) 300 loads per broker, (iv) 5-8 days of 'ACTIVE' status data, (v) 8-12 random 'primary' lanes per broker, (vi) one lane per broker kept sparse, (vii) 23-35 carriers per broker (regular and occasional), (viii) 23 ACTIVE loads per broker awaiting recommendation
+* There is a TMS-agnostic 'world model' faithfully representing real quirks seen in the sample data
+* 3 files, one per broker in its native TMS format, representing the current-state snapshot of the world. In the real world small files will arrive one per day, but a simplified consolidated file was chosen for this demo. The ingestion is idempotent, and the recommendation engine is still getting the entire data with correct timestamps, so having multiple files, one per day, in a real world scenario shouldn't require a big change in the code
 
 ### Recommendation Engine (Intelligence)
 * Instead of relying on a black-box machine learning model, it was decided to weight-rank factors which enables explaining why a carrier or a rate is being recommended
@@ -31,3 +32,6 @@
 ## FrontEnd
 ### Authentication
 * For this demo, I'm using React Contexts that simulate authenticated sessions instead of messing with a real authn/authz mechanism
+
+## Scope Cuts
+

@@ -13,3 +13,11 @@ def kg_to_lbs(value: Decimal) -> Decimal:
 
 def km_to_miles(value: Decimal) -> Decimal:
     return (value * _KM_TO_MI).quantize(_ONE_DECIMAL_PLACE, rounding=ROUND_HALF_UP)
+
+
+def lbs_to_kg(value: Decimal) -> Decimal:
+    return (value / _KG_TO_LB).quantize(_ONE_DECIMAL_PLACE, rounding=ROUND_HALF_UP)
+ 
+ 
+def miles_to_km(value: Decimal) -> Decimal:
+    return (value / _KM_TO_MI).quantize(_ONE_DECIMAL_PLACE, rounding=ROUND_HALF_UP)
