@@ -1,16 +1,23 @@
-"""Loads the committed synthetic data (data/*/current.json) into Postgres.
+"""Loads each broker's generated sync-file stream (data/*/sync/*.json)
+into Postgres, one file at a time, in chronological order -- exactly as
+the real scheduled syncs would have arrived, not as one big batch.
 
-This is the script a fresh clone of the repo should run -- it does NOT
-regenerate anything, it just reads the JSON files already committed and
-ingests them via the real adapters, exactly as if they'd arrived from
-each broker's actual TMS. Requires the Postgres container from
+You must run `uv run python -m scripts.generate_data` first -- sync files
+are gitignored, not committed (see data/.gitignore); 3 brokers x 11 days
+x 4 syncs is a lot of files to carry in the repo for something fully
+reproducible from a fixed seed. Requires the Postgres container from
 `docker compose up` to be running.
 
-Idempotent: safe to re-run (broker lookup is by name, ingestion upserts).
+Idempotent in the same sense generate_data.py's output is deterministic:
+re-running this against the same generated files is a safe no-op
+(broker lookup is by name, ingestion upserts). If you regenerate with a
+different seed in between, re-seeding reflects the new data, same as a
+real re-sync would.
 """
 
 import json
 import os
+from pathlib import Path
 
 import psycopg
 
@@ -41,28 +48,46 @@ def get_or_create_broker(cur, name: str) -> str:
     return cur.fetchone()[0]
 
 
+def sync_files_in_order(broker_slug: str) -> list[Path]:
+    sync_dir = DATA_DIR / broker_slug / "sync"
+    if not sync_dir.exists() or not any(sync_dir.glob("day*_sync*.json")):
+        raise FileNotFoundError(
+            f"{sync_dir} not found or empty. Sync files are generated locally, not committed -- "
+            "run `uv run python -m scripts.generate_data` first."
+        )
+    # Zero-padded day/sync numbers in the filename make plain lexicographic
+    # sort exactly equal to chronological sort: day01_sync01, day01_sync02,
+    # ..., day10_sync04, day11_sync01, ..., day11_sync04.
+    return sorted(sync_dir.glob("day*_sync*.json"))
+
+
 def main() -> None:
     admin_conn = psycopg.connect(MIGRATOR_DSN, autocommit=True)
     runtime_conn = psycopg.connect(RUNTIME_DSN, autocommit=True)
 
     for broker in BROKERS:
-        path = DATA_DIR / broker.slug / "current.json"
-        if not path.exists():
-            raise FileNotFoundError(
-                f"{path} not found. This should be committed to the repo -- "
-                "if it's genuinely missing, run generate_data.py first."
-            )
-
         print(f"=== {broker.name} ({broker.tms}) ===")
-        raw = json.loads(path.read_text())
-        results = _PARSERS[broker.tms](raw)
-
         with admin_conn.cursor() as cur:
             broker_id = get_or_create_broker(cur, broker.name)
         print(f"  broker_id: {broker_id}")
 
-        load_ids = ingest_sync(runtime_conn, broker_id, results)
-        print(f"  ingested {len(load_ids)} loads")
+        files = sync_files_in_order(broker.slug)
+        total_touches = 0
+        for path in files:
+            raw = json.loads(path.read_text())
+            results = _PARSERS[broker.tms](raw)
+            if not results:
+                print(f"  {path.name}: 0 loads (skipped)")
+                continue
+            # One ingest_sync call per file == one transaction per file,
+            # all-or-nothing, same guarantee as before -- there's just 44
+            # of these now per broker instead of 1. set_tenant_context
+            # happens inside ingest_sync per call, scoped to broker_id.
+            load_ids = ingest_sync(runtime_conn, broker_id, results)
+            total_touches += len(load_ids)
+            print(f"  {path.name}: {len(load_ids)} loads touched")
+
+        print(f"  processed {len(files)} sync files, {total_touches} load-touches total for {broker.name}")
 
     admin_conn.close()
     runtime_conn.close()

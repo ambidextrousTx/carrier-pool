@@ -32,7 +32,7 @@ Next, run the backend tests:
 ```bash
 $ uv run pytest tests/backend -v
 $ uv run pytest tests/geo -v
-$ uv run pytest tests/synthetic -v
+>[!Warning] >>> $ uv run pytest tests/synthetic -v <<<
 
 ```
 
@@ -51,8 +51,9 @@ $ uv run pytest tests/ -v
 
 ```
 
-Now load the demo data (from the backend/ folder)
+Now generate and load the demo data (from the backend/ folder)
 ```bash
+$ uv run python -m scripts.generate
 $ uv run python -m scripts.seed_data
 ```
 
