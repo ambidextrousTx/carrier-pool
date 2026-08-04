@@ -1,10 +1,13 @@
 # Decisions made during development
 
+* Refer to ARCHITECTURE.md for the code structure and process flow
+* Refer to README.md for running instructions
+
 ## Development
 * Models used: 
   * Backend, Database: Claude Sonnet 5 with High Effort (free)
   * Frontend: Gemini 3.6 Flash (free)
-* Style used: conversational in the free web console. The model was instructed to work with me as a co-worker, brainstormer, rubber duck, buddy, guide, and mentor. It was asked to really nail down the details and build the system brick by brick, adding unit tests as we go to keep the system robust
+* Style used: conversational in the free web console. The models was instructed to work with me as a co-worker, brainstormer, rubber duck, buddy, guide, and mentor, really nailing down the details and building the system brick by brick, adding unit tests as we go to keep the system robust
 
 ## Backend
 ### Architectural Decisions
@@ -25,14 +28,13 @@
 * There is a TMS-agnostic 'world model' faithfully representing real quirks seen in the sample data
 
 ### Recommendation Engine (Intelligence)
-* Instead of relying on a black-box machine learning model, it was decided to weight-rank factors which enables explaining why a carrier or a rate is being recommended
+* Instead of relying on a black-box machine learning model, several factors are weight-ranked which enables explaining why a carrier or a rate is being recommended
 
 ### API
 * GET /brokers — list brokers (slug, name)
 * GET /brokers/{broker_slug}/loads?status=ACTIVE
 * GET /brokers/{broker_slug}/loads/{load_id} — load detail
 * GET /brokers/{broker_slug}/loads/{load_id}/recommendation — the actual answer. One combined endpoint. A broker looking at one load most likely wants both answers on one screen, not two round trips. Internally it's just calling `rank_carriers` and `predict_rate` back to back and combining the output
-
 
 ## FrontEnd
 ### Authentication
@@ -41,4 +43,6 @@
 ## Scope Cuts (to be addressed if more time is available)
 * The recommendation engine (carrier ranking and rate prediction) is direct SQL + some Python. It should be abstracted out as a separate service
 * Broker selection is a simple parameter - it should be a full blown real login/auth system
+* More robust unit tests can be added
+* Carrier pooling can be added
 

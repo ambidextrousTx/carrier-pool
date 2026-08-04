@@ -22,11 +22,11 @@ Two kinds, per how the system actually behaves:
 +----------------------------------------------------------------------------+
 | SYNTHETIC DATA GENERATION  (offline, deterministic, gitignored output)     |
 | ----------------------------------------------------------------------     |
-| synth/world.py          event-stream world model, per broker, seeded       |
-| synth/export.py         world -> native TMS JSON, one file per sync window |
-| scripts/generate_data.py                                                   |
+| synthetic/world.py          event-stream world model, per broker, seeded       |
+| synthetic/export.py         world -> native TMS JSON, one file per sync window |
+| scripts/generate.py                                                   |
 |     writes data/<broker>/sync/day01_sync01.json ... day11_sync04.json      |
-|     run once per clone: uv run python -m scripts.generate_data             |
+|     run once per clone: uv run python -m scripts.generate                  |
 +----------------------------------------------------------------------------+
                                        v
 +-----------------------------------------------------------------------+
@@ -48,7 +48,7 @@ Two kinds, per how the system actually behaves:
 +--------------------------------------------------------------------------+
 | PERSISTENCE / INGESTION                                                  |
 | -----------------------                                                  |
-| persistence/ingest.py :: ingest_sync(conn, broker_id, results)           |
+| persistence/ingestion.py :: ingest_sync(conn, broker_id, results)        |
 |     one Postgres transaction per file, all-or-nothing, idempotent upsert |
 | persistence/db.py :: set_tenant_context(cur, broker_id)                  |
 | scripts/seed_data.py drives this: one sync file at a time,               |
@@ -71,7 +71,7 @@ Two kinds, per how the system actually behaves:
 +------------------------------------------------------------------------+
 | RECOMMEND ENGINE  (read-only, direct SQL, no separate scoring service) |
 | ---------------------------------------------------------------------- |
-| recommend/engine.py                                                    |
+| recommendation/engine.py                                               |
 |     rank_carriers(cur, load_id)  -> list[CarrierRecommendation]        |
 |     predict_rate(cur, load_id)   -> RatePrediction                     |
 |                                     (always returned, never a bare     |
@@ -94,7 +94,7 @@ Two kinds, per how the system actually behaves:
 +-----------------------------------------------------------------+
                                  v
 +-----------------------------------------------------------------+
-| FRONTEND  (Vite + TypeScript + React)  -- NOT BUILT YET         |
+| FRONTEND  (Vite + TypeScript + React + Tailwind)                |
 | -------------------------------------------------------         |
 | consumes the API above; visual polish explicitly not a priority |
 +-----------------------------------------------------------------+
@@ -104,8 +104,8 @@ Two kinds, per how the system actually behaves:
 `geo/` (fuzzy lane matching -- `reference_data.py`, `lookup.py`,
 `distance.py`, `lanes.py`) is pure, in-memory Python, not a Postgres
 table. It's a shared dependency of two different stages, not a stage of
-its own: `synth/world.py` uses it to generate realistic lanes, and
-`persistence/ingest.py` uses it to enrich `stops.market_area` /
+its own: `synthetic/world.py` uses it to generate realistic lanes, and
+`persistence/ingestion.py` uses it to enrich `stops.market_area` /
 `latitude` / `longitude` at insert time (migration 003). Runtime queries
 never join against a reference table for this -- the enrichment already
 happened once, at ingestion.
@@ -126,14 +126,14 @@ flow below).
 ```
 STEP 1 -- generate (once per clone, or whenever you want fresh data)
 
-  $ uv run python -m scripts.generate_data
+  $ uv run python -m scripts.generate
         |
         v
-  synth/world.py builds one 11-day event history per broker
+  synthetic/world.py builds one 11-day event history per broker
   (seeds 101 / 202 / 303 -- same seed always reproduces the same world)
         |
         v
-  synth/export.py slices it into per-sync-window native JSON,
+  synthetic/export.py slices it into per-sync-window native JSON,
   one file per (day, sync) pair that actually had activity
         |
         v

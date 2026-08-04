@@ -13,8 +13,17 @@ Start everything:
 $ docker compose up --build -d
 ```
 
+Check the sanity of the three containers like so:
+```bash
+$ docker ps
+$ docker compose logs postgres
+$ docker compose logs api
+$ docker compose logs frontend
 
-This builds a custom Postgres image with migrations baked in. If you ever need a clean slate:
+```
+Make sure there's nothing suspicious in the logs.
+
+If you ever need a clean slate:
 ```bash
 $ docker compose down -v # wipes the volume
 $ docker compose up --build -d
@@ -28,47 +37,15 @@ $ uv sync
 
 ```
 
-Next, run the backend tests:
-```bash
-$ uv run pytest tests/backend -v
-$ uv run pytest tests/geo -v
->[!Warning] >>> $ uv run pytest tests/synthetic -v <<<
-
-```
-
-Next, run the Postgres-specific unit tests
-> [!Warning]
-Must have the containers up and running because the tests hit the Postgres container for testing migrations
-
-```bash
-$ uv run pytest tests/persistence -v
-```
-
-
-For running the entire test suite (with docker compose up and running)
-```bash
-$ uv run pytest tests/ -v
-
-```
-
 Now generate and load the demo data (from the backend/ folder. If you want a clean slate, make sure to delete the 3 folders the generate command generates in data/)
 ```bash
 $ uv run python -m scripts.generate
 $ uv run python -m scripts.seed_data
 ```
 
-This reads the synthetic data already committed under data/*/current.json and ingests it into Postgres via the real adapters -- exactly as if it had arrived from each broker's actual TMS. Idempotent, safe to re-run. Note that you do not need to run `generate.py` - that is what produced the committed data/ files.
+This reads the synthetic data just generated under data/*/sync/*.json and ingests it into Postgres via the real adapters -- exactly as if it had arrived from each broker's actual TMS. Idempotent, safe to re-run.
 
-Check the sanity of the three containers like so:
-```bash
-$ docker compose logs postgres
-$ docker compose logs api
-$ docker compose logs frontend
-
-```
-Make sure there's nothing suspicious in the logs
-
-Next, hit the API at http://localhost:8000/docs. Here are the endpoints you can play with:
+Next, hit the API at http://localhost:8000/docs from the api container. Here are the endpoints you can play with:
 ```bash
 * GET /brokers — list brokers (slug, name)
 * GET /brokers/{broker_slug}/loads?status=ACTIVE
@@ -76,18 +53,14 @@ Next, hit the API at http://localhost:8000/docs. Here are the endpoints you can 
 * GET /brokers/{broker_slug}/loads/{load_id}/recommendation
 ```
 
+Finally, the React/TypeScript/Tailwind frontend is at http://localhost:5173 for you to play with. There is no login, the broker ID dropdown at the top right sets the 'tenant context' and enforces multitenancy. In this release there is no carrier-pooling.
 
-Run the frontend tests:
-```bash
-$ cd frontend
-$ npm install
-$ npm run test
-
-```
-
-Finally, the frontend is at http://localhost:5173 for you to play with
+* Refer to ARCHITECTURE.md for the code structure and process flow
+* Refer to DECISIONS.md for decision
 
 ---
+
+# Original Requirements::
 
 # Take-Home: Carrier Recommendation for Freight Brokers
 
