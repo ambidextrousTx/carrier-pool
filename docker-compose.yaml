@@ -29,7 +29,7 @@ services:
       retries: 10
   frontend:
     build:
-      context: ./frontend/
+      context: ./frontend
       target: dev
     ports:
       - "5173:5173"
@@ -37,7 +37,30 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://backend:8000
+      - VITE_API_URL=http://api:8000
+    depends_on:
+      - api
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # postgres, not localhost -- containers reach each other by
+      # service name over the compose network, not the host loopback
+      # interface. api/config.py already reads PGHOST from the
+      # environment (defaults to localhost for bare `uvicorn` runs
+      # outside Docker), so this is the only change needed to point it
+      # at the right host.
+      PGHOST: postgres
+      PGDATABASE: carrier_recs
+      APP_RUNTIME_PASSWORD: ${APP_RUNTIME_PASSWORD:-runtime_dev_pw}
+    volumes:
+      - ./backend:/app # Enables hot-reloading when editing backend code locally
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 
 volumes:
