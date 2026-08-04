@@ -37,7 +37,8 @@ export const BrokerProvider: React.FC<{
         if (isMounted) {
           setBrokers(data);
           if (data.length > 0 && !activeBrokerSlug) {
-            setActiveBrokerSlug(data[0].slug);
+            const defaultId = data[0].slug || data[0].id; // <--- Handles both slug and id!
+            setActiveBrokerSlug(defaultId);
           }
         }
       } catch (err: any) {
