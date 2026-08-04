@@ -51,12 +51,12 @@ def _row_to_load_detail(row) -> LoadDetailOut:
         dest_market, dest_city, dest_state, delivery_date,
     ) = row
     return LoadDetailOut(
-        id=load_id, status=status, equipment_type=equipment_type,
+        id=str(load_id), status=status, equipment_type=equipment_type,
         origin_market_area=origin_market, destination_market_area=dest_market,
         origin_city=origin_city, origin_state=origin_state,
         destination_city=dest_city, destination_state=dest_state,
         pickup_date=pickup_date, delivery_date=delivery_date,
-        distance_miles=float(distance_miles), carrier_id=carrier_id,
+        distance_miles=float(distance_miles), carrier_id=str(carrier_id) if carrier_id is not None else None,
     )
 
 
@@ -122,7 +122,7 @@ def get_recommendation(load_id: str, conn: psycopg.Connection = Depends(get_brok
         load_id=load_id,
         carrier_recommendations=[
             CarrierRecommendationOut(
-                carrier_id=r.carrier_id,
+                carrier_id=str(r.carrier_id),
                 carrier_name=r.carrier_name,
                 mc_number=r.mc_number,
                 dot_number=r.dot_number,
