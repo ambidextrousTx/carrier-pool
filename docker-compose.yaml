@@ -56,8 +56,6 @@ services:
       PGHOST: postgres
       PGDATABASE: carrier_recs
       APP_RUNTIME_PASSWORD: ${APP_RUNTIME_PASSWORD:-runtime_dev_pw}
-    volumes:
-      - ./backend:/app # Enables hot-reloading when editing backend code locally
     depends_on:
       postgres:
         condition: service_healthy
