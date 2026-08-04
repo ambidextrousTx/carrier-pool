@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { RecommendationPanel } from '../RecommendationPanel';
 import { BrokerProvider } from '../../context/BrokerContext';
-import { RecommendationOut } from '../../types/api';
+import type { RecommendationOut } from '../../types/api';
 
 const mockRecommendation: RecommendationOut = {
   load_id: 'LOAD-101',

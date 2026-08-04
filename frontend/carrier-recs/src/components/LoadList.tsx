@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LoadSummaryOut } from '../types/api';
+import type { LoadSummaryOut } from '../types/api';
 import { useBroker } from '../context/BrokerContext';
 import { formatLocation } from '../utils/formatters';
 

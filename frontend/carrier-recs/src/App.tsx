@@ -1,122 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
+import { BrokerProvider, useBroker } from './context/BrokerContext';
+import { LoadList } from './components/LoadList';
+import { RecommendationPanel } from './components/RecommendationPanel';
 
-function App() {
-  const [count, setCount] = useState(0)
+const HeaderBar: React.FC = () => {
+  const { activeBrokerSlug, brokers, setActiveBrokerSlug, isLoadingBrokers } = useBroker();
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <header className="bg-slate-900 text-white px-6 py-4 shadow-md flex justify-between items-center">
+      <div className="flex items-center space-x-3">
+        <span className="text-xl">🚛</span>
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+          <h1 className="text-lg font-bold leading-tight">Carrier Match Engine</h1>
+          <p className="text-xs text-slate-400">Multi-Tenant Freight Recommendation System</p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </div>
 
-      <div className="ticks"></div>
+      {/* Tenant Switcher Dropdown (Rule 9 / 17) */}
+      <div className="flex items-center space-x-3">
+        <label htmlFor="broker-select" className="text-xs text-slate-300 font-medium">
+          Active Broker Tenant:
+        </label>
+        {isLoadingBrokers ? (
+          <span className="text-xs text-slate-400">Loading tenants...</span>
+        ) : (
+          <select
+            id="broker-select"
+            value={activeBrokerSlug || ''}
+            onChange={(e) => setActiveBrokerSlug(e.target.value)}
+            className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+            data-testid="tenant-switcher"
+          >
+            {brokers.map((b) => (
+              <option key={b.id || b.slug} value={b.slug || b.id}>
+                {b.name} ({b.id || b.slug})
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+    </header>
+  );
+};
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+const Workspace: React.FC = () => {
+  const [selectedLoadId, setSelectedLoadId] = useState<string | null>(null);
+  const { activeBrokerSlug } = useBroker();
+
+  // Reset selected load when tenant switches
+  React.useEffect(() => {
+    setSelectedLoadId(null);
+  }, [activeBrokerSlug]);
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+      <HeaderBar />
+
+      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Load List (4 cols on desktop) */}
+          <div className="lg:col-span-4">
+            <LoadList
+              selectedLoadId={selectedLoadId}
+              onSelectLoad={(loadId) => setSelectedLoadId(loadId)}
+            />
+          </div>
+
+          {/* Right Column: Rate Estimate & Carrier Recommendations (8 cols on desktop) */}
+          <div className="lg:col-span-8">
+            <RecommendationPanel loadId={selectedLoadId} />
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </main>
+    </div>
+  );
+};
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+export function App() {
+  return (
+    <BrokerProvider>
+      <Workspace />
+    </BrokerProvider>
+  );
 }
 
-export default App
+export default App;

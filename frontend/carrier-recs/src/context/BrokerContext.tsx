@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Broker } from '../types/api';
+import type { BrokerOut } from '../types/api';
 
 interface BrokerContextType {
   activeBrokerSlug: string | null;
-  brokers: Broker[];
+  brokers: BrokerOut[];
   setActiveBrokerSlug: (slug: string) => void;
   isLoadingBrokers: boolean;
   error: string | null;
@@ -13,9 +13,9 @@ const BrokerContext = createContext<BrokerContextType | undefined>(undefined);
 
 export const BrokerProvider: React.FC<{
   children: React.ReactNode;
-  fetchBrokersFn?: () => Promise<Broker[]>; // Dependency injection for easier testing
+  fetchBrokersFn?: () => Promise<BrokerOut[]>; // Dependency injection for easier testing
 }> = ({ children, fetchBrokersFn }) => {
-  const [brokers, setBrokers] = useState<Broker[]>([]);
+  const [brokers, setBrokers] = useState<BrokerOut[]>([]);
   const [activeBrokerSlug, setActiveBrokerSlug] = useState<string | null>(null);
   const [isLoadingBrokers, setIsLoadingBrokers] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

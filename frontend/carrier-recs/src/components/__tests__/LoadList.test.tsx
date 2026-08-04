@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { LoadList } from '../LoadList';
 import { BrokerProvider } from '../../context/BrokerContext';
-import { LoadSummaryOut } from '../../types/api';
+import type { LoadSummaryOut } from '../../types/api';
 
 const mockLoads: LoadSummaryOut[] = [
   {

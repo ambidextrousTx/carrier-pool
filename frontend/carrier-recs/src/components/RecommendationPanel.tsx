@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RecommendationOut } from '../types/api';
+import type { RecommendationOut } from '../types/api';
 import { useBroker } from '../context/BrokerContext';
 import { formatUSD } from '../utils/formatters';
 
