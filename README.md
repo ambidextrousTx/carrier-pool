@@ -17,7 +17,7 @@ $ docker compose up --build -d
 This builds a custom Postgres image with migrations baked in. If you ever need a clean slate:
 ```bash
 $ docker compose down -v # wipes the volume
-$ docker compose up -d
+$ docker compose up --build -d
 
 ```
 
@@ -51,7 +51,7 @@ $ uv run pytest tests/ -v
 
 ```
 
-Now generate and load the demo data (from the backend/ folder)
+Now generate and load the demo data (from the backend/ folder. If you want a clean slate, make sure to delete the 3 folders the generate command generates in data/)
 ```bash
 $ uv run python -m scripts.generate
 $ uv run python -m scripts.seed_data
@@ -59,15 +59,33 @@ $ uv run python -m scripts.seed_data
 
 This reads the synthetic data already committed under data/*/current.json and ingests it into Postgres via the real adapters -- exactly as if it had arrived from each broker's actual TMS. Idempotent, safe to re-run. Note that you do not need to run `generate.py` - that is what produced the committed data/ files.
 
-Next, hit the API at https://localhost:xxxx/docs. Here are the endpoints you can play with:
+Check the sanity of the three containers like so:
+```bash
+$ docker compose logs postgres
+$ docker compose logs api
+$ docker compose logs frontend
+
+```
+Make sure there's nothing suspicious in the logs
+
+Next, hit the API at http://localhost:8000/docs. Here are the endpoints you can play with:
 ```bash
 * GET /brokers — list brokers (slug, name)
 * GET /brokers/{broker_slug}/loads?status=ACTIVE
 * GET /brokers/{broker_slug}/loads/{load_id} — load detail
 * GET /brokers/{broker_slug}/loads/{load_id}/recommendation
+```
+
+
+Run the frontend tests:
+```bash
+$ cd frontend
+$ npm install
+$ npm run test
 
 ```
 
+Finally, the frontend is at http://localhost:5173 for you to play with
 
 ---
 
