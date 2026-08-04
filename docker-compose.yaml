@@ -27,6 +27,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  frontend:
+    build:
+      context: ./frontend/
+      target: dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://backend:8000
+
 
 volumes:
   pgdata:
