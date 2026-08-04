@@ -3,8 +3,10 @@ name = "carrier-recs-backend"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "psycopg[binary]>=3.3",
+    "fastapi>=0.141.1",
+    "psycopg[binary,pool]>=3.3",
     "pydantic>=2.9",
+    "uvicorn>=0.52.1",
 ]
 
 [dependency-groups]

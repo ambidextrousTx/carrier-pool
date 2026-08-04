@@ -55,9 +55,10 @@ class CarrierRecommendation:
 
 @dataclass(frozen=True)
 class RatePrediction:
-    predicted_total_usd: Decimal
-    low_usd: Decimal
-    high_usd: Decimal
+    is_available: bool
+    predicted_total_usd: Decimal | None
+    low_usd: Decimal | None
+    high_usd: Decimal | None
     comparable_load_count: int
     is_low_confidence: bool
     explanation: str
@@ -206,7 +207,7 @@ def rank_carriers(cur, load_id: str, top_n: int = 5) -> list[CarrierRecommendati
     return recommendations[:top_n]
 
 
-def predict_rate(cur, load_id: str, min_comps: int = 5, absolute_min_comps: int = 3, window_days: int = 90) -> RatePrediction | None:
+def predict_rate(cur, load_id: str, min_comps: int = 5, absolute_min_comps: int = 3, window_days: int = 90) -> RatePrediction:
     ctx = _load_context(cur, load_id)
     window_start = date.today() - timedelta(days=window_days)
 
@@ -242,7 +243,15 @@ def predict_rate(cur, load_id: str, min_comps: int = 5, absolute_min_comps: int 
         scope_desc = f"{ctx.equipment_type} loads broker-wide (not enough same-lane history)"
 
     if len(comps) < absolute_min_comps:
-        return None
+        explanation = (
+            f"Not enough data to predict a rate: found only {len(comps)} completed comparable "
+            f"load{'s' if len(comps) != 1 else ''} ({scope_desc}, last {window_days} days) -- need at least "
+            f"{absolute_min_comps} even after broadening beyond the exact lane."
+        )
+        return RatePrediction(
+            is_available=False, predicted_total_usd=None, low_usd=None, high_usd=None,
+            comparable_load_count=len(comps), is_low_confidence=True, explanation=explanation,
+        )
 
     rates_per_mile = [float(rate) / float(miles) for miles, rate in comps]
     median_rpm = statistics.median(rates_per_mile)
@@ -262,6 +271,6 @@ def predict_rate(cur, load_id: str, min_comps: int = 5, absolute_min_comps: int 
         explanation += " Low confidence -- based on broad market data, not this specific lane."
 
     return RatePrediction(
-        predicted_total_usd=predicted, low_usd=low, high_usd=high,
+        is_available=True, predicted_total_usd=predicted, low_usd=low, high_usd=high,
         comparable_load_count=len(comps), is_low_confidence=is_low_confidence, explanation=explanation,
     )

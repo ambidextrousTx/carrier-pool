@@ -59,6 +59,15 @@ $ uv run python -m scripts.seed_data
 
 This reads the synthetic data already committed under data/*/current.json and ingests it into Postgres via the real adapters -- exactly as if it had arrived from each broker's actual TMS. Idempotent, safe to re-run. Note that you do not need to run `generate.py` - that is what produced the committed data/ files.
 
+Next, hit the API at https://localhost:xxxx/docs. Here are the endpoints you can play with:
+```bash
+* GET /brokers — list brokers (slug, name)
+* GET /brokers/{broker_slug}/loads?status=ACTIVE
+* GET /brokers/{broker_slug}/loads/{load_id} — load detail
+* GET /brokers/{broker_slug}/loads/{load_id}/recommendation
+
+```
+
 
 ---
 
