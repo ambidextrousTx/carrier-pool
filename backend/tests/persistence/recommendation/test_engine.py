@@ -202,7 +202,7 @@ class TestPredictRate:
         target = _insert_load(cur, broker_id, customer_id, None, "ACTIVE", "DRY_VAN", DFW_B, HOUSTON_B, created_days_ago=0)
 
         prediction = predict_rate(cur, target)
-        assert prediction is not None
+        assert prediction.is_available is True
         assert prediction.comparable_load_count == 5
         assert prediction.is_low_confidence is False
         # Median rate (500) shouldn't be dragged by the 2000 outlier the
@@ -224,17 +224,25 @@ class TestPredictRate:
         target = _insert_load(cur, broker_id, customer_id, None, "ACTIVE", "DRY_VAN", DFW_B, HOUSTON_B, created_days_ago=0)
 
         prediction = predict_rate(cur, target)
-        assert prediction is not None
+        assert prediction.is_available is True
         assert prediction.is_low_confidence is True
         assert "Low confidence" in prediction.explanation
         assert prediction.comparable_load_count == 5  # 2 same-lane + 3 other-lane
 
-    def test_returns_none_when_truly_insufficient_data(self, admin_conn, broker_id):
+    def test_unavailable_when_truly_insufficient_data(self, admin_conn, broker_id):
         cur = admin_conn.cursor()
         customer_id = _insert_customer(cur, broker_id)
         target = _insert_load(cur, broker_id, customer_id, None, "ACTIVE", "FLATBED", DFW_B, HOUSTON_B, created_days_ago=0)
 
-        assert predict_rate(cur, target) is None
+        prediction = predict_rate(cur, target)
+        # No bare None -- the caller still needs to know *why* there's no
+        # number, same as a real answer needs to be explained.
+        assert prediction.is_available is False
+        assert prediction.predicted_total_usd is None
+        assert prediction.low_usd is None
+        assert prediction.high_usd is None
+        assert prediction.comparable_load_count == 0
+        assert "Not enough data" in prediction.explanation
 
     def test_uses_summed_rate_line_items_when_no_single_total(self, admin_conn, broker_id):
         """The deferred HaulDesk piece: a load with carrier_rate_total_usd
@@ -258,5 +266,5 @@ class TestPredictRate:
         target = _insert_load(cur, broker_id, customer_id, None, "ACTIVE", "DRY_VAN", DFW_B, HOUSTON_B, created_days_ago=0)
 
         prediction = predict_rate(cur, target)
-        assert prediction is not None
+        assert prediction.is_available is True
         assert prediction.comparable_load_count == 5  # the line-item load counted
