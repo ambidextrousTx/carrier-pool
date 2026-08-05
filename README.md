@@ -55,6 +55,25 @@ Next, hit the API at http://localhost:8000/docs from the api container. Here are
 
 Finally, the React/TypeScript/Tailwind frontend is at http://localhost:5173 for you to play with. There is no login, the broker ID dropdown at the top right sets the 'tenant context' and enforces multitenancy. In this release there is no carrier-pooling.
 
+> [!Note]
+If you want to run unit tests, you may run them individually or together as one backend and one frontend suite:
+```bash
+$ cd backend # From project root
+$ uv sync
+$ uv run pytest tests/ -v # Must have the database container running for the persistence tests
+
+# Individual module test
+$ uv run pytest tests/persistence -v # Must have the database container running for the persistence tests
+$ uv run pytest tests/backend -v
+$ uv run pytest tests/synthetic -v
+$ uv run pytest tests/geo-v
+
+$ cd frontend # From prject root
+$ npm install
+$ npm run test
+
+```
+
 * Refer to ARCHITECTURE.md for the code structure and process flow
 * Refer to DECISIONS.md for decision
 
