@@ -611,9 +611,17 @@ def generate_world(config: WorldConfig) -> World:
         pickup_date = config.today + timedelta(days=rng.randint(1, 3))
         delivery_date = pickup_date + timedelta(days=max(1, int(distance / 500) + rng.randint(0, 2)))
 
+        # Clamped, not left to float freely: created_dt can land as late as
+        # 23:xx on day 11 (_random_time_on picks any hour 0-23), and an
+        # unclamped +1..4h push would spill into day 12 -- which has no
+        # sync window at all (generate_data.py only loops days 1-11), so
+        # the ACTIVE transition would silently vanish from every sync file
+        # rather than just being late.
+        not_after_day11 = datetime.combine(config.today, time(23, 59, 59), tzinfo=timezone.utc)
+        active_dt = min(created_dt + timedelta(hours=rng.uniform(1, 4)), not_after_day11)
         events = (
             LoadEvent(created_dt, LoadStatus.PLANNED, None, None, None),
-            LoadEvent(created_dt + timedelta(hours=rng.uniform(1, 4)), LoadStatus.ACTIVE, None, customer_rate_total, None),
+            LoadEvent(active_dt, LoadStatus.ACTIVE, None, customer_rate_total, None),
         )
 
         loads.append(
